@@ -67,7 +67,7 @@ func NewTls() TlsConfig {
 		RootCAsFile:                "",
 		CertFile:                   "",
 		KeyFile:                    "",
-		TLSAllowInsecureConnection: true,
+		TLSAllowInsecureConnection: false,
 	}
 }
 
