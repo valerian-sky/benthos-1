@@ -132,6 +132,10 @@ func (p *pulsarWriter) ConnectWithContext(ctx context.Context) error {
 		opts.Authentication = pulsar.NewAuthenticationOAuth2(p.conf.Auth.OAuth2.ToMap())
 	} else if p.conf.Auth.Token.Enabled {
 		opts.Authentication = pulsar.NewAuthenticationToken(p.conf.Auth.Token.Token)
+	} else if p.conf.Auth.Tls.Enabled {
+		opts.Authentication = pulsar.NewAuthenticationTLS(p.conf.Auth.Tls.CertFile, p.conf.Auth.Tls.KeyFile)
+		opts.TLSTrustCertsFilePath = p.conf.Auth.Tls.RootCAsFile
+		opts.TLSAllowInsecureConnection = p.conf.Auth.Tls.TLSAllowInsecureConnection
 	}
 
 	if client, err = pulsar.NewClient(opts); err != nil {

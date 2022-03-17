@@ -8,6 +8,7 @@ import (
 type Config struct {
 	OAuth2 OAuth2Config `json:"oauth2" yaml:"oauth2"`
 	Token  TokenConfig  `json:"token" yaml:"token"`
+	Tls    TlsConfig    `json:"tls" yaml:"tls"`
 }
 
 // OAuth2Config contains configuration params for Pulsar OAuth2 authentication.
@@ -24,11 +25,21 @@ type TokenConfig struct {
 	Token   string `json:"token" yaml:"token"`
 }
 
+// TlsConfig contains configuration params for Pulsar Token tls.
+type TlsConfig struct {
+	Enabled                    bool   `json:"enabled" yaml:"enabled"`
+	RootCAsFile                string `json:"root_cas_file" yaml:"root_cas_file"`
+	CertFile                   string `json:"cert_file" yaml:"cert_file"`
+	KeyFile                    string `json:"key_file" yaml:"key_file"`
+	TLSAllowInsecureConnection bool   `json:"allow_insecure_connection" yaml:"allow_insecure_connection"`
+}
+
 // New creates a new Config instance.
 func New() Config {
 	return Config{
 		OAuth2: NewOAuth(),
 		Token:  NewToken(),
+		Tls:    NewTls(),
 	}
 }
 
@@ -50,6 +61,16 @@ func NewToken() TokenConfig {
 	}
 }
 
+func NewTls() TlsConfig {
+	return TlsConfig{
+		Enabled:                    false,
+		RootCAsFile:                "",
+		CertFile:                   "",
+		KeyFile:                    "",
+		TLSAllowInsecureConnection: true,
+	}
+}
+
 // Validate checks whether Config is valid.
 func (c *Config) Validate() error {
 	if c.OAuth2.Enabled && c.Token.Enabled {
@@ -60,6 +81,9 @@ func (c *Config) Validate() error {
 	}
 	if c.Token.Enabled {
 		return c.Token.Validate()
+	}
+	if c.Tls.Enabled {
+		return c.Tls.Validate()
 	}
 	return nil
 }
@@ -93,6 +117,20 @@ func (c *OAuth2Config) ToMap() map[string]string {
 func (c *TokenConfig) Validate() error {
 	if c.Token == "" {
 		return errors.New("token is empty")
+	}
+	return nil
+}
+
+// Validate checks whether TlsConfig is valid.
+func (c *TlsConfig) Validate() error {
+	if c.CertFile == "" {
+		return errors.New("missing cert_file field in client certificate config")
+	}
+	if c.KeyFile == "" {
+		return errors.New("missing key_file field in client certificate config")
+	}
+	if c.RootCAsFile == "" {
+		return errors.New("missing root_cas_file field in client certificate config")
 	}
 	return nil
 }
